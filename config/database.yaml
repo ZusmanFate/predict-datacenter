@@ -1,0 +1,185 @@
+# 数据库配置文件
+
+# 默认数据库类型：mysql, postgresql, sqlite
+default: "impala"
+
+# SQLite 配置（用于开发测试）
+sqlite:
+  database: "data/sales.db"
+  echo: false
+
+# MySQL 配置
+mysql:
+  host: "localhost"
+  port: 3306
+  database: "drug_sales"
+  username: "root"
+  password: "your_password"  # 建议使用环境变量
+  charset: "utf8mb4"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+  pool_recycle: 3600
+
+# PostgreSQL 配置
+postgresql:
+  host: "localhost"
+  port: 5432
+  database: "drug_sales"
+  username: "postgres"
+  password: "your_password"  # 建议使用环境变量
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+  pool_recycle: 3600
+
+# Impala 配置
+impala:
+  host: "jdbc:impala://172.17.224.214" # 替换为您的Impala Daemon主机名或IP
+  port: 21050                     # Impala的默认端口
+  database: "Impala" # 替换为您的Impala数据库名，例如 "default" 或 "drug_sales_dw"
+  username: ""       # 如果Impala集群有认证，需要提供
+  password: ""       # 如果Impala集群有认证，需要提供
+  auth_mechanism: "NOSASL"        # 认证机制，常见有NOSASL, PLAIN, GSSAPI (Kerberos)
+  # 其他可选参数，例如：
+  # use_ssl: false
+  # ca_cert: "/path/to/ca.pem"
+  echo: false # 是否打印SQL语句
+
+# StarRocks 配置
+starrocks:
+  host: "172.17.224.210" # 替换为您的StarRocks FE主机名或IP
+  port: 9030        # StarRocks FE的默认MySQL兼容端口
+  database: "datasense_dlink_erpservice" # 替换为您的StarRocks数据库名
+  username: "erplysrser"
+  password: "Lre@!f2#9" # 替换为您的StarRocks用户密码
+  charset: "utf8mb4"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+  pool_recycle: 3600
+
+# 数据表配置
+tables:
+  # 销量数据表
+  sales:
+    name: "dwd.dwd_erp_mst_biz_all_df"
+    columns:
+      - gcode
+      - create_dt
+      - qty
+      - invoice_price
+      - cust_name
+      - code
+      - gname
+      - mfr_custno
+      - mfr_name
+      - pack_l
+      - pack_m
+      - purchase_price
+      - settlement_purchase_price
+      - invoice_wholesale_price
+      - purchase_tax_rate
+      - whs_attr_code
+      - pzwh
+      - prod_dt
+      - valid_dt
+      - parent_custno
+      - parent_custno_name
+      - sale_area_id
+      - agent_id
+      - agent_name
+      - biz_cat2_code
+      - biz_cat2
+      - contno
+      - tcomp_id
+      - tcomp_name
+      - inven_comp_id
+      - inven_comp_name
+      - dept_id
+      - dept_name
+      - seller_id
+      - seller_name
+  
+  # 药品信息表
+  drugs:
+    name: "dim.dim_erp_mst_goods_info_df"
+    columns:
+      - gcode
+      - prod_cat1
+      - prod_cat2
+      - prod_cat3
+      - finance_prod_cat1
+      - finance_prod_cat2
+      - retail_prod_cat1
+      - retail_prod_cat2
+      - retail_prod_cat3
+      - dosage_form_code
+      - dosage_form
+      - retail_dosage_form
+      - holder_name
+      - pzwh
+      - registration_no
+      - license_no
+      - management_rule
+      - herbal_name
+      - prod_sale_name
+      - sale_catalog_type
+      - is_self_purchase
+      - rebate_type
+      - maintenance_type
+      - priority_maintenance_type
+      - trace_code_type
+      - is_disassembly
+      - unit
+      - spn
+      - model
+      - units_per_pkg
+      - pkg_length
+      - pkg_width
+      - pkg_height
+      - small_pkg_length
+      - small_pkg_width
+      - small_pkg_height
+      - pkg_material
+      - basic_drug_type
+      - gpo_type
+      - is_high_value_consumable
+      - med_ins_catalog_type
+      - is_national_negotiation
+      - strategic_type
+      - is_essential_sale
+      - stimulant_type
+      - is_special_compound
+      - emergency_type
+      - epidemic_prevention
+      - value_level
+      - prescription_type
+      - origin
+      - trademark
+      - bar
+      - medicare_code
+      - product_series
+      - is_reserve
+      - storage_condition
+      - usage
+      - status
+      - attr_json
+  
+  # 医院信息表
+  hospitals:
+    name: "hospital_info"
+    columns:
+      - hospital_id
+      - hospital_name
+      - region
+      - level
+      - type
+
+# 查询配置
+query:
+  # 默认查询日期范围（天）
+  default_date_range: 365
+  
+  # 批量查询限制
+  batch_limit: 10000

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # API 服务
+  api:
+    build: .
+    container_name: drug_forecast_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+    command: uvicorn src.serving.api:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    networks:
+      - forecast_network
+
+  # MLflow 服务（可选）
+  mlflow:
+    image: python:3.10-slim
+    container_name: drug_forecast_mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+    working_dir: /mlruns
+    command: >
+      sh -c "pip install mlflow &&
+             mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri file:///mlruns"
+    restart: unless-stopped
+    networks:
+      - forecast_network
+
+networks:
+  forecast_network:
+    driver: bridge

@@ -1,0 +1,85 @@
+# 主配置文件
+
+# 项目基础配置
+project:
+  name: "药品销量预测系统"
+  version: "1.0.0"
+  description: "时间序列预测系统 - 药品销量预测"
+
+# 路径配置
+paths:
+  data_dir: "data"
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  features_data: "data/features"
+  models_dir: "models"
+  logs_dir: "logs"
+  mlruns_dir: "mlruns"
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
+  rotation: "500 MB"
+  retention: "10 days"
+
+# MLflow 配置
+mlflow:
+  tracking_uri: "mlruns"
+  experiment_name: "drug_sales_forecast"
+  artifact_location: null
+
+# 训练配置
+training:
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+  cross_validation_folds: 5
+  early_stopping_rounds: 50
+
+# 特征工程配置
+features:
+  # 时间窗口特征
+  lag_features: [1, 2, 3, 7, 14, 30]  # 滞后期
+  rolling_windows: [7, 14, 30, 90]     # 滚动窗口
+  
+  # 统计特征
+  statistics: ["mean", "std", "min", "max", "median"]
+  
+  # 日期特征
+  date_features:
+    - year
+    - month
+    - day
+    - dayofweek
+    - quarter
+    - is_weekend
+    - is_month_start
+    - is_month_end
+    - is_quarter_start
+    - is_quarter_end
+
+# 预测配置
+prediction:
+  forecast_horizon: 30  # 预测未来30天
+  batch_size: 1000
+  
+# API 服务配置
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false
+  title: "药品销量预测 API"
+  description: "时间序列预测服务"
+  version: "1.0.0"
+
+# 监控配置
+monitoring:
+  enable_drift_detection: true
+  drift_threshold: 0.05
+  performance_threshold:
+    mape: 0.15  # MAPE 超过 15% 触发告警
+    rmse: 100   # RMSE 阈值
+  auto_retrain: true
+  retrain_interval_days: 7
