@@ -94,34 +94,47 @@ class DatabaseManager:
             host = db_config['host']
             port = db_config['port']
             database = db_config['database']
-            username = db_config.get('username')
-            password = db_config.get('password')
+            username = db_config.get('username', '')
+            password = db_config.get('password', '')
             auth_mechanism = db_config.get('auth_mechanism', 'NOSASL')
 
-            # 构建 Impala 连接字符串，使用 impala+impyla 方言
-            conn_str = f"impala+impyla://"
-            if username:
-                conn_str += f"{username}"
-                if password:
-                    conn_str += f":{password}"
-                conn_str += "@"
-            conn_str += f"{host}:{port}/{database}"
-
-            # 添加查询参数
-            params = []
-            if auth_mechanism:
-                params.append(f"auth_mechanism={auth_mechanism}")
-            if params:
-                conn_str += "?" + "&".join(params)
+            # 使用 PyHive 连接 Impala
+            # 方案 1: HTTP 协议（推荐，不需要 SASL）
+            if auth_mechanism == 'NOSASL' or not username:
+                # 使用 HTTP 传输
+                conn_str = f"hive+http://{host}:{port}/{database}"
+            else:
+                # 方案 2: Thrift 协议（需要 SASL）
+                conn_str = f"hive+thrift://"
+                if username:
+                    conn_str += f"{username}"
+                    if password:
+                        conn_str += f":{password}"
+                    conn_str += "@"
+                conn_str += f"{host}:{port}/{database}"
+            
+            logger.info(f"Impala 连接字符串: {conn_str.replace(password, '***') if password else conn_str}")
             return conn_str
 
         elif self.db_type == 'starrocks':
             # StarRocks 兼容 MySQL 协议，使用 mysql+pymysql 方言
-            return (
-                f"mysql+pymysql://{db_config['username']}:{db_config['password']}"
-                f"@{db_config['host']}:{db_config['port']}/{db_config['database']}"
-                f"?charset={db_config.get('charset', 'utf8mb4')}"
+            from urllib.parse import quote_plus
+            
+            username = quote_plus(db_config['username'])
+            password = quote_plus(db_config['password'])
+            host = db_config['host']
+            port = db_config['port']
+            database = db_config['database']
+            charset = db_config.get('charset', 'utf8mb4')
+            
+            conn_str = (
+                f"mysql+pymysql://{username}:{password}"
+                f"@{host}:{port}/{database}"
+                f"?charset={charset}"
             )
+            
+            logger.info(f"StarRocks 连接字符串: mysql+pymysql://{username}:***@{host}:{port}/{database}")
+            return conn_str
 
         else:
             raise ValueError(f"不支持的数据库类型: {self.db_type}")
@@ -158,8 +171,11 @@ class DatabaseManager:
         Returns:
             查询结果
         """
+        from sqlalchemy import text
+        
         with self.engine.connect() as conn:
-            result = conn.execute(query, params or {})
+            # SQLAlchemy 2.0 需要使用 text() 包装 SQL 语句
+            result = conn.execute(text(query), params or {})
             return result.fetchall()
     
     def create_tables(self) -> None:

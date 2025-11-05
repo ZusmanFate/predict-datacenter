@@ -1,0 +1,11 @@
+# Feast 特征仓库配置
+
+project: drug_sales_forecast
+registry: data/registry.db
+provider: local
+online_store:
+  type: sqlite
+  path: data/online_store.db
+offline_store:
+  type: file
+entity_key_serialization_version: 2
